@@ -1,3 +1,6 @@
+library(data.table)
+library(dplyr)
+
 LoadAndDecorateTable <- function (tableFile, selectedIndices, labels){
     newTable <- read.table(tableFile, colClasses="numeric")
     filteredTable <- select(newTable, selectedIndices)
@@ -14,20 +17,20 @@ GetSelectedFeaturesTable <- function(featFile ='features.txt'){
     return(data.frame(index = selectionIndex, labels = selectedFeatures))
 }
 
-AddDescriptors <- function(targTable, subjFile, activFile, useType){
+AddDescriptors <- function(targTable, subjFile, activFile){
         subjIndicators <- readLines(subjFile)
         activType <- readLines(activFile)
-        statUse <- rep(useType, length(subjIndicators))
         endTable <- data.frame(Participant = subjIndicators, 
-                               Activity= activType, "Stat-Use" = statUse)
+                               Activity= activType)
+        endTable <- mutate(endTable, Participant = paste0("participant_", as.character(endTable$Participant)))
         cbind(endTable, targTable)
 }
 
 RenameActivityValues <- function(targTable){
     al <- read.table('activity_labels.txt')
-    al <- al 
-          %>% mutate(V2 = tolower(al$V2)) 
-          %>% mutate(V2 = gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", V2, perl=TRUE))
+    al <- al %>% 
+          mutate(V2 = tolower(al$V2)) %>%
+          mutate(V2 = gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", V2, perl=TRUE))
     mutate(targTable, Activity = al$V2[targTable$Activity])   
 }
 
@@ -45,8 +48,7 @@ GenerateTidyDataSubset <- function(dataSetType = 'training'){
     }
     tidyDataSubset <- LoadAndDecorateTable(xTableFile, selFeatTable$index, 
                                           selFeatTable$labels)
-    finalTidyDataSubset <- AddDescriptors(tidyDataSubset, subjFile, activFile,
-                                          dataSetType);
+    finalTidyDataSubset <- AddDescriptors(tidyDataSubset, subjFile, activFile);
     tidyDataSubset <- RenameActivityValues(finalTidyDataSubset)
 }
 
@@ -54,4 +56,16 @@ GenerateTidyDataSet <- function(){
     tidyTrainingSet <- GenerateTidyDataSubset()
     tidyTestSet     <- GenerateTidyDataSubset('test')
     rbind(tidyTrainingSet, tidyTestSet)
+}
+
+
+CreateCondAvgsAndCombine <- function(tidyData){
+    mut = data.table(select(tidyData, -Activity))
+    mut <- mut[, lapply(.SD, mean), by=Participant]
+    mut <- rename(mut, Condition_Var = Participant)
+
+    nut <- data.table(select(tidyData, -Participant))
+    nut <- nut[, lapply(.SD, mean), by = Activity]
+    nut <- rename(nut, Condition_Var =  Activity)
+    return (rbind(mut, nut))
 }
