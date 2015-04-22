@@ -8,20 +8,26 @@ LoadAndDecorateTable <- function (tableFile, selectedIndices, labels){
     return(filteredTable)
 }
 
+
+# This function creates a two columned data.table whose first columns
+# gives the indices of the desired features, and who second column
+# are the slightly transformed feature names.
 GetSelectedFeaturesTable <- function(featFile ='features.txt'){
     features <- readLines(featFile)
     selectionIndex <- grep('mean|std', features)
     selectedFeatures <- features[selectionIndex]
     selectedFeatures <- gsub('\\(\\)', '', selectedFeatures)
     selectedFeatures <- gsub('[0-9 ]+', '', selectedFeatures)
+    selectedFeatures <- gsub('-', '_', selectedFeatures)
+    selectedFeatures <- gsub('$', '_Avg', selectedFeatures)
     return(data.frame(index = selectionIndex, labels = selectedFeatures))
 }
 
 AddDescriptors <- function(targTable, subjFile, activFile){
         subjIndicators <- readLines(subjFile)
         activType <- readLines(activFile)
-        endTable <- data.frame(Participant = subjIndicators, 
-                               Activity= activType)
+        endTable <- data.frame(Participant = as.integer(subjIndicators), 
+                               Activity= as.integer(activType))
         endTable <- mutate(endTable, Partic = sprintf("partic_%02d",endTable$Participant))
         prefTable <- RenameActivityValues(endTable)
         prefTable <- mutate(prefTable, Participant_Activity = paste0(prefTable$Partic, "_", prefTable$Activity)) %>%
@@ -62,7 +68,7 @@ GenRawTidyDataSet <- function(){
 }
 
 # For each performance measure this routine computes its average 
-# for each combination of  participants and activities.
+# for each combination of participants and activities.
 
 # The approach to averaging wa suggested in a stackoverflow. discussion.
 # http://tinyurl.com/kq9xg9u 
