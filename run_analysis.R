@@ -22,8 +22,12 @@ AddDescriptors <- function(targTable, subjFile, activFile){
         activType <- readLines(activFile)
         endTable <- data.frame(Participant = subjIndicators, 
                                Activity= activType)
-        endTable <- mutate(endTable, Participant = paste0("participant_", as.character(endTable$Participant)))
-        cbind(endTable, targTable)
+        endTable <- mutate(endTable, Partic = sprintf("partic_%02d",endTable$Participant))
+        prefTable <- RenameActivityValues(endTable)
+        prefTable <- mutate(prefTable, Participant_Activity = paste0(prefTable$Partic, "_", prefTable$Activity)) %>%
+                     select(Participant_Activity)
+        
+        cbind(prefTable, targTable)
 }
 
 RenameActivityValues <- function(targTable){
@@ -49,23 +53,21 @@ GenerateTidyDataSubset <- function(dataSetType = 'training'){
     tidyDataSubset <- LoadAndDecorateTable(xTableFile, selFeatTable$index, 
                                           selFeatTable$labels)
     finalTidyDataSubset <- AddDescriptors(tidyDataSubset, subjFile, activFile);
-    tidyDataSubset <- RenameActivityValues(finalTidyDataSubset)
 }
 
-GenerateTidyDataSet <- function(){
+GenRawTidyDataSet <- function(){
     tidyTrainingSet <- GenerateTidyDataSubset()
     tidyTestSet     <- GenerateTidyDataSubset('test')
     rbind(tidyTrainingSet, tidyTestSet)
 }
 
+# For each performance measure this routine computes its average 
+# for each combination of  participants and activities.
 
+# The approach to averaging wa suggested in a stackoverflow. discussion.
+# http://tinyurl.com/kq9xg9u 
 CreateCondAvgsAndCombine <- function(tidyData){
-    mut = data.table(select(tidyData, -Activity))
-    mut <- mut[, lapply(.SD, mean), by=Participant]
-    mut <- rename(mut, Condition_Var = Participant)
-
-    nut <- data.table(select(tidyData, -Participant))
-    nut <- nut[, lapply(.SD, mean), by = Activity]
-    nut <- rename(nut, Condition_Var =  Activity)
-    return (rbind(mut, nut))
+    tidyDataTable <- data.table(tidyData)
+    tidyDataTable <- tidyDataTable[, lapply(.SD, mean), by=Participant_Activity]
+    return (tidyDataTable)
 }
