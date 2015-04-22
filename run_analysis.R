@@ -66,8 +66,17 @@ GenRawTidyDataSet <- function(){
 
 # The approach to averaging wa suggested in a stackoverflow. discussion.
 # http://tinyurl.com/kq9xg9u 
-CreateCondAvgsAndCombine <- function(tidyData){
+ComputeTidySetWithAvgs <- function(tidyData){
     tidyDataTable <- data.table(tidyData)
     tidyDataTable <- tidyDataTable[, lapply(.SD, mean), by=Participant_Activity]
-    return (tidyDataTable)
+    tidySetWithAvgs <-arrange(tidyDataTable, Participant_Activity)
+    return(tidySetWithAvgs)
+}
+
+
+GenerateAveragedTidySet <- function(){
+    unaveragedTidySet <- GenRawTidyDataSet()
+    averagedTidySet <- ComputeTidySetWithAvgs(unaveragedTidySet)
+    return (averagedTidySet)
+    
 }
