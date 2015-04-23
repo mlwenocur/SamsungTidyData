@@ -6,7 +6,7 @@
 
 
 # The calling structure looks like this where asterisks (ie, *) are used to
-# indicate that a function is a base function.
+# indicate that a function is self-contained.
 
 # GenerateAveragedTidySet depends on:
 #   GenRawTidyDataSet, *ComputeTidySetWithAvgs
@@ -54,7 +54,7 @@ GetSelectedFeaturesTable <- function(featFile ='features.txt'){
 # AddDescriptors creates prefTab, table that is used as prefix column to the 
 # performance measurement columns. prefTable consists one column labeled
 # Participant_Activity whose values are a composition of the subject and
-# activity, eg, Partic_12_Standing, ie, a trial where the 12 participant 
+# activity, eg, Partic_12_Standing is a trial where the 12-th participant 
 # was measured while standing.
 AddDescriptors <- function(targTable, subjFile, activFile){
     subjIndicators <- readLines(subjFile)
@@ -104,7 +104,7 @@ GenRawTidyDataSet <- function(){
     rbind(tidyTrainingSet, tidyTestSet)
 }
 
-# This routine computes for each performance measure its average 
+# This routine computes for each feature, its average 
 # over each combination of participants and activities.
 
 # The approach to averaging was suggested by a StackOverFlow discussion:
