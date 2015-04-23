@@ -1,6 +1,32 @@
+# The topmost function is GenerateAveragedTidySet which calls GenRawTidyDataSet
+# to generate an interim tidy table consisting of all the means and stds input
+# data. It then calls ComputeTidySetWithAvgs to generate the final tidy
+# table. Each of these routines and their helper functions are described
+# in detail.
+
+
+# The calling structure looks like this where asterisks (ie, *) are used to
+# indicate that a function is a base function.
+
+# GenerateAveragedTidySet depends on:
+#   GenRawTidyDataSet, *ComputeTidySetWithAvgs
+#
+# GenRawTidyDataSet depends on:
+#   GenerateTidyDataSubset
+#
+# GenerateTidyDataSubset depends on:
+#   *GetSelectedFeaturesTable, *LoadAndDecorateTable, AddDescriptors
+#
+# AddDescriptors depends on:
+#   *RenameActivityValues
+#
 library(data.table)
 library(dplyr)
 
+# LoadAndDecorateTable is used to create a table of the performance data that 
+# consists of only those measurements that are either means or standard
+# deviations. It also labels them the labels indicated by the "features.txt"
+# file.
 LoadAndDecorateTable <- function (tableFile, selectedIndices, labels){
     newTable <- read.table(tableFile, colClasses="numeric")
     filteredTable <- select(newTable, selectedIndices)
@@ -9,33 +35,44 @@ LoadAndDecorateTable <- function (tableFile, selectedIndices, labels){
 }
 
 
-# This function creates a two columned data.table whose first columns
+# This function creates a two columned data.table whose first column
 # gives the indices of the desired features, and who second column
 # are the slightly transformed feature names.
 GetSelectedFeaturesTable <- function(featFile ='features.txt'){
     features <- readLines(featFile)
-    selectionIndex <- grep('mean|std', features)
+    selectionIndex <- grep('mean|std', features) #grep return indices of matching lines.
     selectedFeatures <- features[selectionIndex]
+    #Process features to remove line numbers, capitalize them and add postfix.
     selectedFeatures <- gsub('\\(\\)', '', selectedFeatures)
     selectedFeatures <- gsub('[0-9 ]+', '', selectedFeatures)
     selectedFeatures <- gsub('-', '_', selectedFeatures)
     selectedFeatures <- gsub('$', '_Avg', selectedFeatures)
+    
     return(data.frame(index = selectionIndex, labels = selectedFeatures))
 }
 
+# AddDescriptors creates prefTab, table that is used as prefix column to the 
+# performance measurement columns. prefTable consists one column labeled
+# Participant_Activity whose values are a composition of the subject and
+# activity, eg, Partic_12_Standing, ie, a trial where the 12 participant 
+# was measured while standing.
 AddDescriptors <- function(targTable, subjFile, activFile){
-        subjIndicators <- readLines(subjFile)
-        activType <- readLines(activFile)
-        endTable <- data.frame(Participant = as.integer(subjIndicators), 
-                               Activity= as.integer(activType))
-        endTable <- mutate(endTable, Partic = sprintf("partic_%02d",endTable$Participant))
-        prefTable <- RenameActivityValues(endTable)
-        prefTable <- mutate(prefTable, Participant_Activity = paste0(prefTable$Partic, "_", prefTable$Activity)) %>%
-                     select(Participant_Activity)
+    subjIndicators <- readLines(subjFile)
+    activType <- readLines(activFile)
+    endTable <- data.frame(Participant = as.integer(subjIndicators), 
+                           Activity= as.integer(activType))
+    endTable <- mutate(endTable, Partic = sprintf("partic_%02d",endTable$Participant))
+    prefTab <- RenameActivityValues(endTable)
+    prefTab <- mutate(prefTab, Participant_Activity = paste0(prefTab$Partic, 
+                      "_", prefTab$Activity)) %>%
+               select(Participant_Activity)
         
-        cbind(prefTable, targTable)
+    cbind(prefTab, targTable)
 }
 
+# Helper routine that converts integer activity labels to descriptive labels 
+# given in the "activity_labels.txt". The activity labels are modified from
+# all capitals to capitalized forms.
 RenameActivityValues <- function(targTable){
     al <- read.table('activity_labels.txt')
     al <- al %>% 
@@ -67,10 +104,10 @@ GenRawTidyDataSet <- function(){
     rbind(tidyTrainingSet, tidyTestSet)
 }
 
-# For each performance measure this routine computes its average 
-# for each combination of participants and activities.
+# This routine computes for each performance measure its average 
+# over each combination of participants and activities.
 
-# The approach to averaging wa suggested in a stackoverflow. discussion.
+# The approach to averaging was suggested by a StackOverFlow discussion:
 # http://tinyurl.com/kq9xg9u 
 ComputeTidySetWithAvgs <- function(tidyData){
     tidyDataTable <- data.table(tidyData)
@@ -79,7 +116,9 @@ ComputeTidySetWithAvgs <- function(tidyData){
     return(tidySetWithAvgs)
 }
 
-
+# This is the topmost function that generates the tidy set whose
+# values consist of the averages for each of the 180 distinct groupings
+# of subject and activity.
 GenerateAveragedTidySet <- function(){
     unaveragedTidySet <- GenRawTidyDataSet()
     averagedTidySet <- ComputeTidySetWithAvgs(unaveragedTidySet)
