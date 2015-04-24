@@ -5,27 +5,32 @@ table. Each of these routines and their helper functions are described
 in detail.
 
 
-The calling structure looks like this where asterisks (ie, \*) are used to
-indicate that a function is self-contained.
+The calling structure is given below where asterisks (ie, \*) are used to
+denote that a function is self-contained.
 
-*GenerateAveragedTidySet* depends on:
-  *GenRawTidyDataSet*, \*ComputeTidySetWithAvgs
+*GenerateAveragedTidySet* ***depends on***  
+  -  *GenRawTidyDataSet*    
+  -  \**ComputeTidySetWithAvgs*
 
-*GenRawTidyDataSet* depends on:
-  *GenerateTidyDataSubset*
+*GenRawTidyDataSet* depends on:  
+  - *GenerateTidyDataSubset*
 
-*GenerateTidyDataSubset* depends on:
-  \*GetSelectedFeaturesTable, \**LoadAndDecorateTable*, *AddDescriptors*
+*GenerateTidyDataSubset* depends on:  
+  - \**GetSelectedFeaturesTable*  
+  - \**LoadAndDecorateTable*  
+  - *AddDescriptors*
 
-*AddDescriptors* depends on:
-  \*RenameActivityValues
-
+*AddDescriptors* depends on:  
+ - \**RenameActivityValues*
 ###### Descriptions of component functions
 *LoadAndDecorateTable* is used to create a table of the performance data that consists of only those measurements that are either means or standard deviations. It also labels them the labels indicated by the  "features.txt" file.
 
 *GetSelectedFeaturesTable* creates a two columned data.table whose first column gives the indices of the desired features, and who second column are the slightly transformed feature names.
 
-*AddDescriptors* creates prefTab, table that is used as a prefix column to the performance measurement columns. prefTable consists one column labeled Participant_Activity whose values are a composition of the subject and  activity, eg, Partic_12_Standing is a trial where the 12-th participant was measured while standing.
+*AddDescriptors*  creates prefixTab, table that is used as prefix column 
+ to the feature measurement columns. prefixTab consists two columns labeled
+ Subject, Activity respectively, corresponding to the subject and activity 
+ being measured. 
 
 *RenameActivityValues* converts integer activity labels to descriptive labels given in the "activity_labels.txt". The activity labels are modified from all capitals to capitalized forms.
 

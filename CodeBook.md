@@ -10,7 +10,7 @@ The authors of the study created a condensed way of describing what each variabl
 
 * t prefix indicates a feature measured in ***t***ime.
 * f prefix indicates Fourier transformation of the 128 readings
-* Jerk is the derivative of acceleration or more usually force.
+* Jerk infix is the derivative of acceleration or more usually force.
 * Acc infix indicates a measurement of acceleration.
 * Gyro infix indicates that the measurement is that of angular and not translational.
 * X, Y, Z and Mag infixes respectively indicate X, Y, Z dimensions and Mag the Euclidean magnitude of the X, Y, Z features.
@@ -18,11 +18,12 @@ The authors of the study created a condensed way of describing what each variabl
 * The authors also fail to mention how they are normalizing the data to range between -1 and 1, and how they are smoothing the data to compute jerk and acceleration.
 
 ###### Code Book variables
-The first column labeled Participant\_Activity marks which subject was performing the indicated activity. All other column labels inherit their meanings as explained in the features\_info.txt and README.txt files, the difference being that the postfix \_Avg indicates that the feature has been averaged over the entire 2.56 second window.
+The first two column labeled respectively Subject and Activity mark which subject performed the indicated activity. All other column labels inherit their meanings as explained in the features\_info.txt and README.txt files, the difference being that the postfix \_Avg indicates that the feature has been averaged over the entire 2.56 second collection window.
  
 **Note** when selecting features I omitted the angle data which are defined in terms of window means. The reason for doing this is that the angle of two means is no longer a mean or standard deviation.
 
-1. Participant\_Activity
+1. Subject
+2. Activity
 2. tBodyAcc\_mean\_X\_Avg
 3. tBodyAcc\_mean\_Y\_Avg
 4. tBodyAcc\_mean\_Z\_Avg

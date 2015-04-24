@@ -51,23 +51,18 @@ GetSelectedFeaturesTable <- function(featFile ='features.txt'){
     return(data.frame(index = selectionIndex, labels = selectedFeatures))
 }
 
-# AddDescriptors creates prefTab, table that is used as prefix column to the 
-# performance measurement columns. prefTable consists one column labeled
-# Participant_Activity whose values are a composition of the subject and
-# activity, eg, Partic_12_Standing is a trial where the 12-th participant 
-# was measured while standing.
+# AddDescriptors creates prefixTab, table that is used as prefix column 
+# to the feature measurement columns. prefixTab consists two columns labeled
+# Subject, Activity respectively.
 AddDescriptors <- function(targTable, subjFile, activFile){
     subjIndicators <- readLines(subjFile)
     activType <- readLines(activFile)
-    endTable <- data.frame(Participant = as.integer(subjIndicators), 
+    endTable <- data.frame(Subject = as.integer(subjIndicators), 
                            Activity= as.integer(activType))
-    endTable <- mutate(endTable, Partic = sprintf("partic_%02d",endTable$Participant))
-    prefTab <- RenameActivityValues(endTable)
-    prefTab <- mutate(prefTab, Participant_Activity = paste0(prefTab$Partic, 
-                      "_", prefTab$Activity)) %>%
-               select(Participant_Activity)
-        
-    cbind(prefTab, targTable)
+    prefixTab <- mutate(endTable, Subject = sprintf("%02d",endTable$Subject))
+    prefixTab <- RenameActivityValues(prefixTab)
+    cbind(prefixTab, targTable)
+ 
 }
 
 # Helper routine that converts integer activity labels to descriptive labels 
@@ -105,14 +100,14 @@ GenRawTidyDataSet <- function(){
 }
 
 # This routine computes for each feature, its average 
-# over each combination of participants and activities.
+# over each combination of subject and activities.
 
 # The approach to averaging was suggested by a StackOverFlow discussion:
 # http://tinyurl.com/kq9xg9u 
 ComputeTidySetWithAvgs <- function(tidyData){
     tidyDataTable <- data.table(tidyData)
-    tidyDataTable <- tidyDataTable[, lapply(.SD, mean), by=Participant_Activity]
-    tidySetWithAvgs <-arrange(tidyDataTable, Participant_Activity)
+    tidyDataTable <- tidyDataTable[, lapply(.SD, mean), by=list(Subject, Activity)]
+    tidySetWithAvgs <-arrange(tidyDataTable, Subject, Activity)
     return(tidySetWithAvgs)
 }
 
