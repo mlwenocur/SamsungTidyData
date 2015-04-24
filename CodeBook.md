@@ -2,7 +2,7 @@
 ##### Explanation of Experimental Data and Code Book
 
 ###### Overview of Experimental Data
-Each subject was measured doing six distinct activities: Laying, Sitting, Standing, Walking, Walking_downstairs, and Walking_upstairs. Each observation row consists of various normalized statistical summaries of 128 sensor readings taken during during a 2.56 second interval. Each activity lasted for 2 minutes 26 seconds.
+Each subject was measured doing six distinct activities: Laying, Sitting, Standing, Walking, Walking_downstairs, and Walking_upstairs. Each observation row consists of various normalized statistical summaries of 128 sensor readings taken during during a 2.56 second interval. 
 
 Our task is to compute the averages of each observation class (ie, for a specific subject doing a specific activity) over the entire activity.
 
