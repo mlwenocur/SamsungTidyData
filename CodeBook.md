@@ -14,8 +14,18 @@ The authors of the study created a condensed way of describing what each variabl
 * Acc infix indicates a measurement of acceleration.
 * Gyro infix indicates that the measurement is that of angular and not translational.
 * X, Y, Z and Mag infixes respectively indicate X, Y, Z dimensions and Mag the Euclidean magnitude of the X, Y, Z features.
-* It is odd that they make three angular measurements since they must be linearly dependent (each angle defines a plane and any three planes are linearly dependent).
+* It is odd that they make three angular measurements since they must be linearly dependent (each angle defines a plane and any three planes are linearly dependent).****
 * The authors also fail to mention how they are normalizing the data to range between -1 and 1, and how they are smoothing the data to compute jerk and acceleration.
+###### Data Processing Steps
+1. Load feature data sets as data tables from X_t\*\*..\*.txt.
+2. Select those features that are either means or standard deviations.
+	These features are selected by loading and filtering from features.txt.
+3. Add Labels to features.
+4. Create prefix table of subject and activity by loading subject_t\*..\*.txt and y_t\*..\*.txt files.
+	Translate activities integer codes to descriptive labels by utilizing activity_labels.txt.
+5. Use cbind to prefix subject-activity table to feature table.
+6. Use rbind to collate training and test tables.
+7. Use data.table method to average with respect to subject and activity grouping (for example, _tidyDataTable[, lapply(.SD, mean), by=list(Subject, Activity)]_)
 
 ###### Code Book variables
 The first two column labeled respectively Subject and Activity mark which subject performed the indicated activity. All other column labels inherit their meanings as explained in the features\_info.txt and README.txt files, the difference being that the postfix \_Avg indicates that the feature has been averaged over the entire 2.56 second collection window.
